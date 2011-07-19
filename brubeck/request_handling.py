@@ -538,11 +538,12 @@ class Brubeck(object):
         # A Mongrel2Connection is currently just a way to manage
         # the sockets we need to open with a Mongrel2 instance and
         # identify this particular Brubeck instance as the sender
-        if mongrel2_pair is not None:
+        if mongrel2_pair is None:
+            logging.warn('Skipping mongrel2 connection: mongrel2_pair not provided')
+            self.m2conn = None
+        else:
             (pull_addr, pub_addr) = mongrel2_pair
             self.m2conn = Mongrel2Connection(pull_addr, pub_addr)
-        else:
-            raise ValueException('No mongrel2 connection possible.')
 
         # Class based route lists should be handled this way.
         # It is also possible to use `add_route`, a decorator provided by a
@@ -682,6 +683,10 @@ class Brubeck(object):
         help users avoid thinking about complex things like an event loop while
         still getting the goodness of asynchronous and nonblocking I/O.
         """
+
+        if self.m2conn is None:
+            raise ValueException('No mongrel2 connection possible.')
+
         greeting = 'Brubeck v%s online ]-----------------------------------'
         print greeting % version
         
